@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
@@ -42,9 +43,11 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TipTimeScreen() {
+    var tipInput by remember{ mutableStateOf("")  }
+    val tipPercent = tipInput.toDoubleOrNull() ?:0.0
     var amountInput by remember {mutableStateOf("0")}
     val amount = amountInput.toDoubleOrNull()?: 0.0
-    val tip = calculateTip(amount)
+    val tip = calculateTip(amount, tipPercent)
 
     Column(modifier = Modifier.padding(32.dp),
     verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -54,7 +57,11 @@ fun TipTimeScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        EditNumberField(value= amountInput, onValueChange = {amountInput = it})
+        EditNumberField(value= amountInput, onValueChange = {amountInput = it},
+            label = R.string.bill_amount)
+
+        EditNumberField(label = R.string.how_was_the_service, value = tipInput,
+            onValueChange ={tipInput = it} )
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -68,18 +75,23 @@ fun TipTimeScreen() {
 }
 
 @Composable
-fun EditNumberField(value: String, onValueChange: (String)-> Unit){
+fun EditNumberField(
+    @StringRes label : Int,
+    value: String,
+    onValueChange: (String)-> Unit,
+    modifier: Modifier= Modifier
+){
 
     TextField(value = value,
         onValueChange =onValueChange,
-    label = {Text(stringResource(id = R.string.cost_of_service))},
+    label = {Text(stringResource(id = label))},
     modifier = Modifier.fillMaxWidth(),
     singleLine = true,
     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
     )
 }
 
-private fun calculateTip(amount: Double, tipPercent: Double = 15.0) : String{
+private fun calculateTip(amount: Double, tipPercent: Double) : String{
     val tip = tipPercent/100 * amount
     return NumberFormat.getCurrencyInstance().format(tip)
 }
